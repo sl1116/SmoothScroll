@@ -46,6 +46,7 @@ public sealed class SettingsStore : IDisposable
                     Enabled = _settings.Enabled,
                     AnimationDurationMs = _settings.AnimationDurationMs,
                     FrameCount = _settings.FrameCount,
+                    MinimumFrameDelta = _settings.MinimumFrameDelta,
                     WheelMultiplier = _settings.WheelMultiplier,
                     DisabledProcessNames = [.. _settings.DisabledProcessNames]
                 };
@@ -129,18 +130,24 @@ public sealed class SettingsStore : IDisposable
 
     private static void UpgradeLegacyDefaults(AppSettings settings)
     {
-        var hasOldPrototypeTiming =
+        var hasFirstPrototypeTiming =
             settings.AnimationDurationMs == 180 &&
             settings.FrameCount == 12 &&
             Math.Abs(settings.WheelMultiplier - 1.0) < 0.001;
 
-        if (!hasOldPrototypeTiming)
+        var hasSecondPrototypeTiming =
+            settings.AnimationDurationMs == 95 &&
+            settings.FrameCount == 8 &&
+            Math.Abs(settings.WheelMultiplier - 1.35) < 0.001;
+
+        if (!hasFirstPrototypeTiming && !hasSecondPrototypeTiming)
         {
             return;
         }
 
         settings.AnimationDurationMs = AppSettings.DefaultAnimationDurationMs;
         settings.FrameCount = AppSettings.DefaultFrameCount;
+        settings.MinimumFrameDelta = AppSettings.DefaultMinimumFrameDelta;
         settings.WheelMultiplier = AppSettings.DefaultWheelMultiplier;
     }
 }

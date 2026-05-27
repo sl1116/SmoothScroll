@@ -55,17 +55,19 @@ Gia tri mac dinh hien tai:
 
 ```json
 {
-  "animationDurationMs": 95,
-  "frameCount": 8,
-  "wheelMultiplier": 1.35
+  "animationDurationMs": 48,
+  "frameCount": 4,
+  "minimumFrameDelta": 30,
+  "wheelMultiplier": 2.0
 }
 ```
 
 Goi y:
 
-- Muon phan hoi nhanh hon: giam `animationDurationMs` xuong 70-85.
-- Muon cuon nhanh hon: tang `wheelMultiplier` len 1.5-1.8.
-- Muon muot hon nhung co the cham hon: tang `frameCount` len 10-12.
+- Muon phan hoi nhanh hon: giam `animationDurationMs` xuong 35-45.
+- Muon cuon nhanh hon: tang `wheelMultiplier` len 2.2-2.8.
+- Muon bot giat trong app co ho tro high-resolution wheel: giam `minimumFrameDelta` xuong 10-20.
+- Muon tranh lag trong Word/PDF/Explorer: giu `minimumFrameDelta` khoang 30-60.
 
 ## Build
 

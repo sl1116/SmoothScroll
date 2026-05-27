@@ -76,6 +76,7 @@ public sealed class SmoothScrollAnimator : IDisposable
     {
         var settings = _settingsStore.Current;
         var frameCount = Math.Max(1, settings.FrameCount);
+        var minimumFrameDelta = Math.Max(0, settings.MinimumFrameDelta);
         var targetDelta = (int)Math.Round(rawDelta * settings.WheelMultiplier);
         var sentDelta = 0;
 
@@ -91,8 +92,9 @@ public sealed class SmoothScrollAnimator : IDisposable
             var easedProgress = EaseOutCubic(progress);
             var desiredTotal = (int)Math.Round(targetDelta * easedProgress);
             var frameDelta = desiredTotal - sentDelta;
+            var isLastFrame = frame == frameCount;
 
-            if (frameDelta != 0)
+            if (frameDelta != 0 && (isLastFrame || Math.Abs(frameDelta) >= minimumFrameDelta))
             {
                 SendWheel(frameDelta, horizontal);
                 sentDelta += frameDelta;
