@@ -1,14 +1,16 @@
-using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 
 namespace SmoothScrollLocal;
 
 public sealed class SmoothScrollAnimator : IDisposable
 {
-    private readonly BlockingCollection<WheelRequest> _queue = new();
+    private readonly AutoResetEvent _hasWork = new(false);
     private readonly CancellationTokenSource _shutdown = new();
+    private readonly object _gate = new();
     private readonly SettingsStore _settingsStore;
     private readonly Task _worker;
+    private int _pendingVerticalDelta;
+    private int _pendingHorizontalDelta;
 
     public SmoothScrollAnimator(SettingsStore settingsStore)
     {
@@ -18,16 +20,30 @@ public sealed class SmoothScrollAnimator : IDisposable
 
     public void EnqueueWheel(int delta, bool horizontal)
     {
-        if (!_queue.IsAddingCompleted)
+        lock (_gate)
         {
-            _queue.Add(new WheelRequest(delta, horizontal));
+            if (_shutdown.IsCancellationRequested)
+            {
+                return;
+            }
+
+            if (horizontal)
+            {
+                _pendingHorizontalDelta += delta;
+            }
+            else
+            {
+                _pendingVerticalDelta += delta;
+            }
         }
+
+        _hasWork.Set();
     }
 
     public void Dispose()
     {
-        _queue.CompleteAdding();
         _shutdown.Cancel();
+        _hasWork.Set();
 
         try
         {
@@ -38,7 +54,7 @@ public sealed class SmoothScrollAnimator : IDisposable
             // App is exiting; do not block shutdown on the animation worker.
         }
 
-        _queue.Dispose();
+        _hasWork.Dispose();
         _shutdown.Dispose();
     }
 
@@ -46,23 +62,13 @@ public sealed class SmoothScrollAnimator : IDisposable
     {
         while (!_shutdown.IsCancellationRequested)
         {
-            WheelRequest request;
-            try
+            if (!TryTakeNext(out var delta, out var horizontal))
             {
-                request = _queue.Take(_shutdown.Token);
-            }
-            catch
-            {
-                return;
+                _hasWork.WaitOne();
+                continue;
             }
 
-            var totalDelta = request.Delta;
-            while (_queue.TryTake(out var next) && next.Horizontal == request.Horizontal)
-            {
-                totalDelta += next.Delta;
-            }
-
-            Animate(totalDelta, request.Horizontal);
+            Animate(delta, horizontal);
         }
     }
 
@@ -75,6 +81,12 @@ public sealed class SmoothScrollAnimator : IDisposable
 
         for (var frame = 1; frame <= frameCount && !_shutdown.IsCancellationRequested; frame++)
         {
+            var newDelta = TakePendingDelta(horizontal);
+            if (newDelta != 0)
+            {
+                targetDelta += (int)Math.Round(newDelta * settings.WheelMultiplier);
+            }
+
             var progress = frame / (double)frameCount;
             var easedProgress = EaseOutCubic(progress);
             var desiredTotal = (int)Math.Round(targetDelta * easedProgress);
@@ -87,6 +99,12 @@ public sealed class SmoothScrollAnimator : IDisposable
             }
 
             Thread.Sleep(settings.FrameDelayMs);
+        }
+
+        var finalDelta = TakePendingDelta(horizontal);
+        if (finalDelta != 0)
+        {
+            targetDelta += (int)Math.Round(finalDelta * settings.WheelMultiplier);
         }
 
         var remainder = targetDelta - sentDelta;
@@ -118,5 +136,46 @@ public sealed class SmoothScrollAnimator : IDisposable
         _ = NativeMethods.SendInput(1, inputs, Marshal.SizeOf<NativeMethods.INPUT>());
     }
 
-    private readonly record struct WheelRequest(int Delta, bool Horizontal);
+    private bool TryTakeNext(out int delta, out bool horizontal)
+    {
+        lock (_gate)
+        {
+            if (_pendingVerticalDelta != 0)
+            {
+                delta = _pendingVerticalDelta;
+                horizontal = false;
+                _pendingVerticalDelta = 0;
+                return true;
+            }
+
+            if (_pendingHorizontalDelta != 0)
+            {
+                delta = _pendingHorizontalDelta;
+                horizontal = true;
+                _pendingHorizontalDelta = 0;
+                return true;
+            }
+        }
+
+        delta = 0;
+        horizontal = false;
+        return false;
+    }
+
+    private int TakePendingDelta(bool horizontal)
+    {
+        lock (_gate)
+        {
+            if (horizontal)
+            {
+                var delta = _pendingHorizontalDelta;
+                _pendingHorizontalDelta = 0;
+                return delta;
+            }
+
+            var verticalDelta = _pendingVerticalDelta;
+            _pendingVerticalDelta = 0;
+            return verticalDelta;
+        }
+    }
 }

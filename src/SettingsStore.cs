@@ -87,6 +87,7 @@ public sealed class SettingsStore : IDisposable
 
             var json = File.ReadAllText(ConfigPath);
             var settings = JsonSerializer.Deserialize<AppSettings>(json, _jsonOptions) ?? new AppSettings();
+            UpgradeLegacyDefaults(settings);
             settings.Normalize();
             return settings;
         }
@@ -124,5 +125,22 @@ public sealed class SettingsStore : IDisposable
         {
             _watcher.EnableRaisingEvents = true;
         }
+    }
+
+    private static void UpgradeLegacyDefaults(AppSettings settings)
+    {
+        var hasOldPrototypeTiming =
+            settings.AnimationDurationMs == 180 &&
+            settings.FrameCount == 12 &&
+            Math.Abs(settings.WheelMultiplier - 1.0) < 0.001;
+
+        if (!hasOldPrototypeTiming)
+        {
+            return;
+        }
+
+        settings.AnimationDurationMs = AppSettings.DefaultAnimationDurationMs;
+        settings.FrameCount = AppSettings.DefaultFrameCount;
+        settings.WheelMultiplier = AppSettings.DefaultWheelMultiplier;
     }
 }

@@ -4,13 +4,17 @@ namespace SmoothScrollLocal;
 
 public sealed class AppSettings
 {
+    public const int DefaultAnimationDurationMs = 95;
+    public const int DefaultFrameCount = 8;
+    public const double DefaultWheelMultiplier = 1.35;
+
     public bool Enabled { get; set; } = true;
 
-    public int AnimationDurationMs { get; set; } = 180;
+    public int AnimationDurationMs { get; set; } = DefaultAnimationDurationMs;
 
-    public int FrameCount { get; set; } = 12;
+    public int FrameCount { get; set; } = DefaultFrameCount;
 
-    public double WheelMultiplier { get; set; } = 1.0;
+    public double WheelMultiplier { get; set; } = DefaultWheelMultiplier;
 
     public List<string> DisabledProcessNames { get; set; } = [];
 

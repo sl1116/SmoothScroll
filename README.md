@@ -43,6 +43,30 @@ Sau khi chay, tim icon cua app trong System Tray. Chuot phai vao icon de:
 - Open config file
 - Exit
 
+## Chinh toc do
+
+App luu cau hinh tai:
+
+```text
+%AppData%\SmoothScrollLocal\config.json
+```
+
+Gia tri mac dinh hien tai:
+
+```json
+{
+  "animationDurationMs": 95,
+  "frameCount": 8,
+  "wheelMultiplier": 1.35
+}
+```
+
+Goi y:
+
+- Muon phan hoi nhanh hon: giam `animationDurationMs` xuong 70-85.
+- Muon cuon nhanh hon: tang `wheelMultiplier` len 1.5-1.8.
+- Muon muot hon nhung co the cham hon: tang `frameCount` len 10-12.
+
 ## Build
 
 ```powershell
