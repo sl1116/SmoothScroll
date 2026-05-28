@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ApplicationIcon>assets\app-icon.ico</ApplicationIcon>
     <AssemblyName>SmoothScrollLocal</AssemblyName>
     <RootNamespace>SmoothScrollLocal</RootNamespace>
   </PropertyGroup>

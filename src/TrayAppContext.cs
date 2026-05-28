@@ -6,6 +6,7 @@ public sealed class TrayAppContext : ApplicationContext
 {
     private readonly SettingsStore _settingsStore;
     private readonly MouseHook _mouseHook;
+    private readonly Icon _appIcon;
     private readonly NotifyIcon _notifyIcon;
     private readonly ToolStripMenuItem _enabledMenuItem;
 
@@ -35,9 +36,10 @@ public sealed class TrayAppContext : ApplicationContext
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add(new ToolStripMenuItem("Exit", null, (_, _) => ExitThread()));
 
+        _appIcon = Icon.ExtractAssociatedIcon(Application.ExecutablePath) ?? (Icon)SystemIcons.Application.Clone();
         _notifyIcon = new NotifyIcon
         {
-            Icon = SystemIcons.Application,
+            Icon = _appIcon,
             ContextMenuStrip = menu,
             Visible = true
         };
@@ -51,6 +53,7 @@ public sealed class TrayAppContext : ApplicationContext
         {
             _notifyIcon.Visible = false;
             _notifyIcon.Dispose();
+            _appIcon.Dispose();
             _mouseHook.Dispose();
             _settingsStore.Dispose();
         }
