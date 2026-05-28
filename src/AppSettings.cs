@@ -4,27 +4,15 @@ namespace SmoothScrollLocal;
 
 public sealed class AppSettings
 {
-    public const double MaxWheelMultiplier = 12.0;
-
-    public const int DefaultAnimationDurationMs = 72;
-    public const int DefaultFrameCount = 9;
-    public const int DefaultMinimumFrameDelta = 0;
-    public const double DefaultWheelMultiplier = 2.8;
-
-    public const int FastAnimationDurationMs = 48;
-    public const int FastFrameCount = 4;
-    public const int FastMinimumFrameDelta = 30;
-    public const double FastWheelMultiplier = 4.0;
-
     public bool Enabled { get; set; } = true;
 
-    public int AnimationDurationMs { get; set; } = DefaultAnimationDurationMs;
+    public int AnimationDurationMs { get; set; } = ScrollPresets.SmootherAnimationDurationMs;
 
-    public int FrameCount { get; set; } = DefaultFrameCount;
+    public int FrameCount { get; set; } = ScrollPresets.SmootherFrameCount;
 
-    public int MinimumFrameDelta { get; set; } = DefaultMinimumFrameDelta;
+    public int MinimumFrameDelta { get; set; } = ScrollPresets.SmootherMinimumFrameDelta;
 
-    public double WheelMultiplier { get; set; } = DefaultWheelMultiplier;
+    public double WheelMultiplier { get; set; } = ScrollPresets.SmootherWheelMultiplier;
 
     public List<string> DisabledProcessNames { get; set; } = [];
 
@@ -49,7 +37,7 @@ public sealed class AppSettings
         AnimationDurationMs = Math.Clamp(AnimationDurationMs, 30, 1000);
         FrameCount = Math.Clamp(FrameCount, 1, 60);
         MinimumFrameDelta = Math.Clamp(MinimumFrameDelta, 0, NativeMethods.WHEEL_DELTA);
-        WheelMultiplier = Math.Clamp(WheelMultiplier, 0.1, MaxWheelMultiplier);
+        WheelMultiplier = Math.Clamp(WheelMultiplier, 0.1, ScrollProfile.MaxWheelMultiplier);
 
         AppProfiles = AppProfiles
             .Where(pair => !string.IsNullOrWhiteSpace(pair.Key))
@@ -72,52 +60,15 @@ public sealed class AppSettings
 
     public void ApplySmootherPreset()
     {
-        AnimationDurationMs = DefaultAnimationDurationMs;
-        FrameCount = DefaultFrameCount;
-        MinimumFrameDelta = DefaultMinimumFrameDelta;
-        WheelMultiplier = DefaultWheelMultiplier;
+        ApplyProfile(ScrollPresets.CreateSmoother());
     }
 
     public void ApplyFastPreset()
     {
-        AnimationDurationMs = FastAnimationDurationMs;
-        FrameCount = FastFrameCount;
-        MinimumFrameDelta = FastMinimumFrameDelta;
-        WheelMultiplier = FastWheelMultiplier;
+        ApplyProfile(ScrollPresets.CreateFast());
     }
 
-    public ScrollProfile GetProfileForProcess(string? processName)
-    {
-        if (!string.IsNullOrWhiteSpace(processName) &&
-            AppProfiles.TryGetValue(processName, out var profile))
-        {
-            return profile.Clone();
-        }
-
-        return new ScrollProfile
-        {
-            AnimationDurationMs = AnimationDurationMs,
-            FrameCount = FrameCount,
-            MinimumFrameDelta = MinimumFrameDelta,
-            WheelMultiplier = WheelMultiplier
-        };
-    }
-}
-
-public sealed class ScrollProfile
-{
-    public int AnimationDurationMs { get; set; } = AppSettings.DefaultAnimationDurationMs;
-
-    public int FrameCount { get; set; } = AppSettings.DefaultFrameCount;
-
-    public int MinimumFrameDelta { get; set; } = AppSettings.DefaultMinimumFrameDelta;
-
-    public double WheelMultiplier { get; set; } = AppSettings.DefaultWheelMultiplier;
-
-    [JsonIgnore]
-    public int FrameDelayMs => Math.Max(1, AnimationDurationMs / Math.Max(1, FrameCount));
-
-    public ScrollProfile Clone()
+    public ScrollProfile ToScrollProfile()
     {
         return new ScrollProfile
         {
@@ -128,11 +79,13 @@ public sealed class ScrollProfile
         };
     }
 
-    public void Normalize()
+    public void ApplyProfile(ScrollProfile profile)
     {
-        AnimationDurationMs = Math.Clamp(AnimationDurationMs, 30, 1000);
-        FrameCount = Math.Clamp(FrameCount, 1, 60);
-        MinimumFrameDelta = Math.Clamp(MinimumFrameDelta, 0, NativeMethods.WHEEL_DELTA);
-        WheelMultiplier = Math.Clamp(WheelMultiplier, 0.1, AppSettings.MaxWheelMultiplier);
+        profile.Normalize();
+
+        AnimationDurationMs = profile.AnimationDurationMs;
+        FrameCount = profile.FrameCount;
+        MinimumFrameDelta = profile.MinimumFrameDelta;
+        WheelMultiplier = profile.WheelMultiplier;
     }
 }

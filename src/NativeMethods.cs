@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace SmoothScrollLocal;
@@ -81,61 +80,4 @@ internal static partial class NativeMethods
         public nint DwExtraInfo;
     }
 
-    public static string? GetForegroundProcessName()
-    {
-        var foregroundWindow = GetForegroundWindow();
-        if (foregroundWindow == nint.Zero)
-        {
-            return null;
-        }
-
-        _ = GetWindowThreadProcessId(foregroundWindow, out var processId);
-        if (processId == 0)
-        {
-            return null;
-        }
-
-        try
-        {
-            return Process.GetProcessById((int)processId).ProcessName;
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
-    public static string? GetProcessNameFromPoint(POINT point)
-    {
-        var window = WindowFromPoint(point);
-        return GetProcessNameFromWindow(window);
-    }
-
-    public static string? GetProcessNameUnderCursor()
-    {
-        return GetCursorPos(out var point) ? GetProcessNameFromPoint(point) : null;
-    }
-
-    private static string? GetProcessNameFromWindow(nint window)
-    {
-        if (window == nint.Zero)
-        {
-            return null;
-        }
-
-        _ = GetWindowThreadProcessId(window, out var processId);
-        if (processId == 0)
-        {
-            return null;
-        }
-
-        try
-        {
-            return Process.GetProcessById((int)processId).ProcessName;
-        }
-        catch
-        {
-            return null;
-        }
-    }
 }

@@ -75,8 +75,8 @@ public sealed class MouseHook : IDisposable
 
         var settings = _settingsStore.Current;
         var processName =
-            NativeMethods.GetProcessNameFromPoint(hookInfo.Pt) ??
-            NativeMethods.GetForegroundProcessName();
+            WindowProcessDetector.GetProcessNameFromPoint(hookInfo.Pt) ??
+            WindowProcessDetector.GetForegroundProcessName();
 
         if (!settings.Enabled || settings.IsProcessDisabled(processName))
         {
@@ -92,7 +92,7 @@ public sealed class MouseHook : IDisposable
         _animator.EnqueueWheel(
             wheelDelta,
             horizontal: message == NativeMethods.WM_MOUSEHWHEEL,
-            profile: settings.GetProfileForProcess(processName));
+            profile: ProfileResolver.Resolve(settings, processName));
 
         return 1;
     }

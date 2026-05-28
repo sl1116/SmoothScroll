@@ -7,16 +7,14 @@ public sealed class SmoothScrollAnimator : IDisposable
     private readonly AutoResetEvent _hasWork = new(false);
     private readonly CancellationTokenSource _shutdown = new();
     private readonly object _gate = new();
-    private readonly SettingsStore _settingsStore;
     private readonly Task _worker;
     private int _pendingVerticalDelta;
     private int _pendingHorizontalDelta;
     private ScrollProfile _pendingVerticalProfile = new();
     private ScrollProfile _pendingHorizontalProfile = new();
 
-    public SmoothScrollAnimator(SettingsStore settingsStore)
+    public SmoothScrollAnimator()
     {
-        _settingsStore = settingsStore;
         _worker = Task.Run(ProcessQueue);
     }
 

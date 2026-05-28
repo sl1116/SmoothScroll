@@ -26,7 +26,7 @@ internal static class Program
         }
 
         using var settingsStore = new SettingsStore();
-        using var animator = new SmoothScrollAnimator(settingsStore);
+        using var animator = new SmoothScrollAnimator();
         using var hook = new MouseHook(settingsStore, animator);
 
         hook.Start();

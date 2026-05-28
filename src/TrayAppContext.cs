@@ -64,8 +64,8 @@ public sealed class TrayAppContext : ApplicationContext
     private void DisableCurrentApp()
     {
         var processName =
-            NativeMethods.GetProcessNameUnderCursor() ??
-            NativeMethods.GetForegroundProcessName();
+            WindowProcessDetector.GetProcessNameUnderCursor() ??
+            WindowProcessDetector.GetForegroundProcessName();
         if (string.IsNullOrWhiteSpace(processName))
         {
             MessageBox.Show(
