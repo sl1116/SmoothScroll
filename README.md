@@ -61,10 +61,10 @@ Gia tri mac dinh hien tai:
   "wheelMultiplier": 2.8,
   "appProfiles": {
     "WINWORD": {
-      "animationDurationMs": 48,
-      "frameCount": 6,
-      "minimumFrameDelta": 20,
-      "wheelMultiplier": 3.4
+      "animationDurationMs": 35,
+      "frameCount": 3,
+      "minimumFrameDelta": 80,
+      "wheelMultiplier": 7.0
     },
     "AcroRd32": {
       "animationDurationMs": 55,
@@ -99,6 +99,7 @@ Goi y:
 - Muon nhanh hon: dung menu tray `Use faster preset`.
 - Muon phan hoi nhanh hon nua: giam `animationDurationMs` xuong 45-60.
 - Muon cuon nhanh hon: tang `wheelMultiplier` len 3.0-4.0.
+- Rieng Word thuong can `wheelMultiplier` cao hon va `minimumFrameDelta` lon hon vi Word xu ly wheel theo nac dong thay vi pixel.
 - Muon bot giat trong app co ho tro high-resolution wheel: giam `minimumFrameDelta` xuong 10-20.
 - Muon tranh lag trong Word/PDF/Explorer: giu `minimumFrameDelta` khoang 30-60.
 

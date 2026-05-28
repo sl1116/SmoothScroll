@@ -4,6 +4,8 @@ namespace SmoothScrollLocal;
 
 public sealed class AppSettings
 {
+    public const double MaxWheelMultiplier = 12.0;
+
     public const int DefaultAnimationDurationMs = 72;
     public const int DefaultFrameCount = 9;
     public const int DefaultMinimumFrameDelta = 0;
@@ -47,7 +49,7 @@ public sealed class AppSettings
         AnimationDurationMs = Math.Clamp(AnimationDurationMs, 30, 1000);
         FrameCount = Math.Clamp(FrameCount, 1, 60);
         MinimumFrameDelta = Math.Clamp(MinimumFrameDelta, 0, NativeMethods.WHEEL_DELTA);
-        WheelMultiplier = Math.Clamp(WheelMultiplier, 0.1, 5.0);
+        WheelMultiplier = Math.Clamp(WheelMultiplier, 0.1, MaxWheelMultiplier);
 
         AppProfiles = AppProfiles
             .Where(pair => !string.IsNullOrWhiteSpace(pair.Key))
@@ -131,6 +133,6 @@ public sealed class ScrollProfile
         AnimationDurationMs = Math.Clamp(AnimationDurationMs, 30, 1000);
         FrameCount = Math.Clamp(FrameCount, 1, 60);
         MinimumFrameDelta = Math.Clamp(MinimumFrameDelta, 0, NativeMethods.WHEEL_DELTA);
-        WheelMultiplier = Math.Clamp(WheelMultiplier, 0.1, 5.0);
+        WheelMultiplier = Math.Clamp(WheelMultiplier, 0.1, AppSettings.MaxWheelMultiplier);
     }
 }
