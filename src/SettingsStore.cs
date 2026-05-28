@@ -140,7 +140,13 @@ public sealed class SettingsStore : IDisposable
             settings.FrameCount == 8 &&
             Math.Abs(settings.WheelMultiplier - 1.35) < 0.001;
 
-        if (!hasFirstPrototypeTiming && !hasSecondPrototypeTiming)
+        var hasThirdPrototypeTiming =
+            settings.AnimationDurationMs == 48 &&
+            settings.FrameCount == 4 &&
+            settings.MinimumFrameDelta == 30 &&
+            Math.Abs(settings.WheelMultiplier - 2.0) < 0.001;
+
+        if (!hasFirstPrototypeTiming && !hasSecondPrototypeTiming && !hasThirdPrototypeTiming)
         {
             return;
         }

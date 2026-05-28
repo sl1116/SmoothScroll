@@ -7,7 +7,7 @@ public sealed class AppSettings
     public const int DefaultAnimationDurationMs = 48;
     public const int DefaultFrameCount = 4;
     public const int DefaultMinimumFrameDelta = 30;
-    public const double DefaultWheelMultiplier = 2.0;
+    public const double DefaultWheelMultiplier = 4.0;
 
     public bool Enabled { get; set; } = true;
 
