@@ -37,6 +37,13 @@ internal static partial class NativeMethods
     public static partial nint GetForegroundWindow();
 
     [LibraryImport("user32.dll")]
+    public static partial nint WindowFromPoint(POINT point);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool GetCursorPos(out POINT point);
+
+    [LibraryImport("user32.dll")]
     public static partial uint GetWindowThreadProcessId(nint hWnd, out uint processId);
 
     [StructLayout(LayoutKind.Sequential)]
@@ -83,6 +90,40 @@ internal static partial class NativeMethods
         }
 
         _ = GetWindowThreadProcessId(foregroundWindow, out var processId);
+        if (processId == 0)
+        {
+            return null;
+        }
+
+        try
+        {
+            return Process.GetProcessById((int)processId).ProcessName;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public static string? GetProcessNameFromPoint(POINT point)
+    {
+        var window = WindowFromPoint(point);
+        return GetProcessNameFromWindow(window);
+    }
+
+    public static string? GetProcessNameUnderCursor()
+    {
+        return GetCursorPos(out var point) ? GetProcessNameFromPoint(point) : null;
+    }
+
+    private static string? GetProcessNameFromWindow(nint window)
+    {
+        if (window == nint.Zero)
+        {
+            return null;
+        }
+
+        _ = GetWindowThreadProcessId(window, out var processId);
         if (processId == 0)
         {
             return null;

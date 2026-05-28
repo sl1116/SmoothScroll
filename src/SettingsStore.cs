@@ -48,7 +48,11 @@ public sealed class SettingsStore : IDisposable
                     FrameCount = _settings.FrameCount,
                     MinimumFrameDelta = _settings.MinimumFrameDelta,
                     WheelMultiplier = _settings.WheelMultiplier,
-                    DisabledProcessNames = [.. _settings.DisabledProcessNames]
+                    DisabledProcessNames = [.. _settings.DisabledProcessNames],
+                    AppProfiles = _settings.AppProfiles.ToDictionary(
+                        pair => pair.Key,
+                        pair => pair.Value.Clone(),
+                        StringComparer.OrdinalIgnoreCase)
                 };
             }
         }

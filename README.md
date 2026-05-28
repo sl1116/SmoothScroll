@@ -58,9 +58,40 @@ Gia tri mac dinh hien tai:
   "animationDurationMs": 72,
   "frameCount": 9,
   "minimumFrameDelta": 0,
-  "wheelMultiplier": 2.8
+  "wheelMultiplier": 2.8,
+  "appProfiles": {
+    "WINWORD": {
+      "animationDurationMs": 48,
+      "frameCount": 6,
+      "minimumFrameDelta": 20,
+      "wheelMultiplier": 3.4
+    },
+    "AcroRd32": {
+      "animationDurationMs": 55,
+      "frameCount": 7,
+      "minimumFrameDelta": 15,
+      "wheelMultiplier": 3.2
+    },
+    "explorer": {
+      "animationDurationMs": 45,
+      "frameCount": 5,
+      "minimumFrameDelta": 25,
+      "wheelMultiplier": 3.5
+    }
+  }
 }
 ```
+
+App se nhan dien process nam duoi con tro chuot. Neu ban chia man hinh thanh nhieu cua so, cuon tren cua so nao thi profile cua process do duoc ap dung.
+
+Ten process thong dung:
+
+- Word: `WINWORD`
+- Adobe Reader: `AcroRd32`
+- Adobe Acrobat: `Acrobat`
+- Windows Explorer: `explorer`
+- Edge: `msedge`
+- Chrome: `chrome`
 
 Goi y:
 

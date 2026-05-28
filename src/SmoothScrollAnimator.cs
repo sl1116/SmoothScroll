@@ -11,6 +11,8 @@ public sealed class SmoothScrollAnimator : IDisposable
     private readonly Task _worker;
     private int _pendingVerticalDelta;
     private int _pendingHorizontalDelta;
+    private ScrollProfile _pendingVerticalProfile = new();
+    private ScrollProfile _pendingHorizontalProfile = new();
 
     public SmoothScrollAnimator(SettingsStore settingsStore)
     {
@@ -18,7 +20,7 @@ public sealed class SmoothScrollAnimator : IDisposable
         _worker = Task.Run(ProcessQueue);
     }
 
-    public void EnqueueWheel(int delta, bool horizontal)
+    public void EnqueueWheel(int delta, bool horizontal, ScrollProfile profile)
     {
         lock (_gate)
         {
@@ -30,10 +32,12 @@ public sealed class SmoothScrollAnimator : IDisposable
             if (horizontal)
             {
                 _pendingHorizontalDelta += delta;
+                _pendingHorizontalProfile = profile;
             }
             else
             {
                 _pendingVerticalDelta += delta;
+                _pendingVerticalProfile = profile;
             }
         }
 
@@ -62,30 +66,32 @@ public sealed class SmoothScrollAnimator : IDisposable
     {
         while (!_shutdown.IsCancellationRequested)
         {
-            if (!TryTakeNext(out var delta, out var horizontal))
+            if (!TryTakeNext(out var delta, out var horizontal, out var profile))
             {
                 _hasWork.WaitOne();
                 continue;
             }
 
-            Animate(delta, horizontal);
+            Animate(delta, horizontal, profile);
         }
     }
 
-    private void Animate(int rawDelta, bool horizontal)
+    private void Animate(int rawDelta, bool horizontal, ScrollProfile profile)
     {
-        var settings = _settingsStore.Current;
-        var frameCount = Math.Max(1, settings.FrameCount);
-        var minimumFrameDelta = Math.Max(0, settings.MinimumFrameDelta);
-        var targetDelta = (int)Math.Round(rawDelta * settings.WheelMultiplier);
+        profile.Normalize();
+
+        var frameCount = Math.Max(1, profile.FrameCount);
+        var minimumFrameDelta = Math.Max(0, profile.MinimumFrameDelta);
+        var targetDelta = (int)Math.Round(rawDelta * profile.WheelMultiplier);
         var sentDelta = 0;
 
         for (var frame = 1; frame <= frameCount && !_shutdown.IsCancellationRequested; frame++)
         {
-            var newDelta = TakePendingDelta(horizontal);
+            var newDelta = TakePendingDelta(horizontal, out var pendingProfile);
             if (newDelta != 0)
             {
-                targetDelta += (int)Math.Round(newDelta * settings.WheelMultiplier);
+                pendingProfile.Normalize();
+                targetDelta += (int)Math.Round(newDelta * pendingProfile.WheelMultiplier);
             }
 
             var progress = frame / (double)frameCount;
@@ -100,13 +106,14 @@ public sealed class SmoothScrollAnimator : IDisposable
                 sentDelta += frameDelta;
             }
 
-            Thread.Sleep(settings.FrameDelayMs);
+            Thread.Sleep(profile.FrameDelayMs);
         }
 
-        var finalDelta = TakePendingDelta(horizontal);
+        var finalDelta = TakePendingDelta(horizontal, out var finalProfile);
         if (finalDelta != 0)
         {
-            targetDelta += (int)Math.Round(finalDelta * settings.WheelMultiplier);
+            finalProfile.Normalize();
+            targetDelta += (int)Math.Round(finalDelta * finalProfile.WheelMultiplier);
         }
 
         var remainder = targetDelta - sentDelta;
@@ -138,7 +145,7 @@ public sealed class SmoothScrollAnimator : IDisposable
         _ = NativeMethods.SendInput(1, inputs, Marshal.SizeOf<NativeMethods.INPUT>());
     }
 
-    private bool TryTakeNext(out int delta, out bool horizontal)
+    private bool TryTakeNext(out int delta, out bool horizontal, out ScrollProfile profile)
     {
         lock (_gate)
         {
@@ -146,6 +153,7 @@ public sealed class SmoothScrollAnimator : IDisposable
             {
                 delta = _pendingVerticalDelta;
                 horizontal = false;
+                profile = _pendingVerticalProfile.Clone();
                 _pendingVerticalDelta = 0;
                 return true;
             }
@@ -154,6 +162,7 @@ public sealed class SmoothScrollAnimator : IDisposable
             {
                 delta = _pendingHorizontalDelta;
                 horizontal = true;
+                profile = _pendingHorizontalProfile.Clone();
                 _pendingHorizontalDelta = 0;
                 return true;
             }
@@ -161,21 +170,24 @@ public sealed class SmoothScrollAnimator : IDisposable
 
         delta = 0;
         horizontal = false;
+        profile = new ScrollProfile();
         return false;
     }
 
-    private int TakePendingDelta(bool horizontal)
+    private int TakePendingDelta(bool horizontal, out ScrollProfile profile)
     {
         lock (_gate)
         {
             if (horizontal)
             {
                 var delta = _pendingHorizontalDelta;
+                profile = _pendingHorizontalProfile.Clone();
                 _pendingHorizontalDelta = 0;
                 return delta;
             }
 
             var verticalDelta = _pendingVerticalDelta;
+            profile = _pendingVerticalProfile.Clone();
             _pendingVerticalDelta = 0;
             return verticalDelta;
         }

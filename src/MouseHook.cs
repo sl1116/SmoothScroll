@@ -74,7 +74,10 @@ public sealed class MouseHook : IDisposable
         }
 
         var settings = _settingsStore.Current;
-        var processName = NativeMethods.GetForegroundProcessName();
+        var processName =
+            NativeMethods.GetProcessNameFromPoint(hookInfo.Pt) ??
+            NativeMethods.GetForegroundProcessName();
+
         if (!settings.Enabled || settings.IsProcessDisabled(processName))
         {
             return NativeMethods.CallNextHookEx(_hookHandle, nCode, wParam, lParam);
@@ -86,7 +89,10 @@ public sealed class MouseHook : IDisposable
             return NativeMethods.CallNextHookEx(_hookHandle, nCode, wParam, lParam);
         }
 
-        _animator.EnqueueWheel(wheelDelta, horizontal: message == NativeMethods.WM_MOUSEHWHEEL);
+        _animator.EnqueueWheel(
+            wheelDelta,
+            horizontal: message == NativeMethods.WM_MOUSEHWHEEL,
+            profile: settings.GetProfileForProcess(processName));
 
         return 1;
     }
