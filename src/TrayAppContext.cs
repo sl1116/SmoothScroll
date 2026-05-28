@@ -9,6 +9,8 @@ public sealed class TrayAppContext : ApplicationContext
     private readonly Icon _appIcon;
     private readonly NotifyIcon _notifyIcon;
     private readonly ToolStripMenuItem _enabledMenuItem;
+    private readonly ToolStripMenuItem _startWithWindowsMenuItem;
+    private bool _updatingStartupMenuItem;
 
     public TrayAppContext(SettingsStore settingsStore, MouseHook mouseHook)
     {
@@ -26,8 +28,23 @@ public sealed class TrayAppContext : ApplicationContext
             UpdateTooltip();
         };
 
+        _startWithWindowsMenuItem = new ToolStripMenuItem("Start with Windows")
+        {
+            CheckOnClick = true,
+            Checked = StartupManager.IsEnabled()
+        };
+        _startWithWindowsMenuItem.CheckedChanged += (_, _) =>
+        {
+            if (!_updatingStartupMenuItem)
+            {
+                SetStartWithWindows(_startWithWindowsMenuItem.Checked);
+            }
+        };
+
         var menu = new ContextMenuStrip();
         menu.Items.Add(_enabledMenuItem);
+        menu.Items.Add(_startWithWindowsMenuItem);
+        menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add(new ToolStripMenuItem("Use smoother preset", null, (_, _) => ApplySmootherPreset()));
         menu.Items.Add(new ToolStripMenuItem("Use faster preset", null, (_, _) => ApplyFastPreset()));
         menu.Items.Add(new ToolStripSeparator());
@@ -116,6 +133,32 @@ public sealed class TrayAppContext : ApplicationContext
             "SmoothScroll Local",
             MessageBoxButtons.OK,
             MessageBoxIcon.Information);
+    }
+
+    private void SetStartWithWindows(bool enabled)
+    {
+        try
+        {
+            StartupManager.SetEnabled(enabled);
+        }
+        catch (Exception ex)
+        {
+            _updatingStartupMenuItem = true;
+            try
+            {
+                _startWithWindowsMenuItem.Checked = StartupManager.IsEnabled();
+            }
+            finally
+            {
+                _updatingStartupMenuItem = false;
+            }
+
+            MessageBox.Show(
+                ex.Message,
+                "Cannot update startup setting",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
     }
 
     private void OpenConfigFile()
