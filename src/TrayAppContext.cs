@@ -27,6 +27,9 @@ public sealed class TrayAppContext : ApplicationContext
 
         var menu = new ContextMenuStrip();
         menu.Items.Add(_enabledMenuItem);
+        menu.Items.Add(new ToolStripMenuItem("Use smoother preset", null, (_, _) => ApplySmootherPreset()));
+        menu.Items.Add(new ToolStripMenuItem("Use faster preset", null, (_, _) => ApplyFastPreset()));
+        menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add(new ToolStripMenuItem("Disable for current app", null, (_, _) => DisableCurrentApp()));
         menu.Items.Add(new ToolStripMenuItem("Open config file", null, (_, _) => OpenConfigFile()));
         menu.Items.Add(new ToolStripSeparator());
@@ -78,6 +81,33 @@ public sealed class TrayAppContext : ApplicationContext
 
         MessageBox.Show(
             $"Disabled SmoothScroll for {processName}.",
+            "SmoothScroll Local",
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Information);
+    }
+
+    private void ApplySmootherPreset()
+    {
+        _settingsStore.Update(settings => settings.ApplySmootherPreset());
+        UpdateTooltip();
+        ShowPresetApplied("Smoother", _settingsStore.Current);
+    }
+
+    private void ApplyFastPreset()
+    {
+        _settingsStore.Update(settings => settings.ApplyFastPreset());
+        UpdateTooltip();
+        ShowPresetApplied("Fast", _settingsStore.Current);
+    }
+
+    private static void ShowPresetApplied(string presetName, AppSettings settings)
+    {
+        MessageBox.Show(
+            $"{presetName} preset applied.\n\n" +
+            $"Duration: {settings.AnimationDurationMs} ms\n" +
+            $"Frames: {settings.FrameCount}\n" +
+            $"Minimum delta: {settings.MinimumFrameDelta}\n" +
+            $"Speed multiplier: {settings.WheelMultiplier:0.##}",
             "SmoothScroll Local",
             MessageBoxButtons.OK,
             MessageBoxIcon.Information);

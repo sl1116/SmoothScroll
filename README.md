@@ -55,18 +55,19 @@ Gia tri mac dinh hien tai:
 
 ```json
 {
-  "animationDurationMs": 48,
-  "frameCount": 4,
-  "minimumFrameDelta": 30,
-  "wheelMultiplier": 4.0
+  "animationDurationMs": 72,
+  "frameCount": 9,
+  "minimumFrameDelta": 0,
+  "wheelMultiplier": 2.8
 }
 ```
 
 Goi y:
 
-- Muon phan hoi nhanh hon: giam `animationDurationMs` xuong 35-45.
-- Muon cuon nhanh hon nua: tang `wheelMultiplier` len 4.5-5.0.
-- Muon cham lai: giam `wheelMultiplier` xuong 2.0-3.0.
+- Muon muot hon: dung menu tray `Use smoother preset`.
+- Muon nhanh hon: dung menu tray `Use faster preset`.
+- Muon phan hoi nhanh hon nua: giam `animationDurationMs` xuong 45-60.
+- Muon cuon nhanh hon: tang `wheelMultiplier` len 3.0-4.0.
 - Muon bot giat trong app co ho tro high-resolution wheel: giam `minimumFrameDelta` xuong 10-20.
 - Muon tranh lag trong Word/PDF/Explorer: giu `minimumFrameDelta` khoang 30-60.
 

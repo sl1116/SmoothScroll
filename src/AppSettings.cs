@@ -4,10 +4,15 @@ namespace SmoothScrollLocal;
 
 public sealed class AppSettings
 {
-    public const int DefaultAnimationDurationMs = 48;
-    public const int DefaultFrameCount = 4;
-    public const int DefaultMinimumFrameDelta = 30;
-    public const double DefaultWheelMultiplier = 4.0;
+    public const int DefaultAnimationDurationMs = 72;
+    public const int DefaultFrameCount = 9;
+    public const int DefaultMinimumFrameDelta = 0;
+    public const double DefaultWheelMultiplier = 2.8;
+
+    public const int FastAnimationDurationMs = 48;
+    public const int FastFrameCount = 4;
+    public const int FastMinimumFrameDelta = 30;
+    public const double FastWheelMultiplier = 4.0;
 
     public bool Enabled { get; set; } = true;
 
@@ -48,5 +53,21 @@ public sealed class AppSettings
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
             .ToList();
+    }
+
+    public void ApplySmootherPreset()
+    {
+        AnimationDurationMs = DefaultAnimationDurationMs;
+        FrameCount = DefaultFrameCount;
+        MinimumFrameDelta = DefaultMinimumFrameDelta;
+        WheelMultiplier = DefaultWheelMultiplier;
+    }
+
+    public void ApplyFastPreset()
+    {
+        AnimationDurationMs = FastAnimationDurationMs;
+        FrameCount = FastFrameCount;
+        MinimumFrameDelta = FastMinimumFrameDelta;
+        WheelMultiplier = FastWheelMultiplier;
     }
 }

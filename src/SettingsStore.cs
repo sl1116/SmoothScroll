@@ -146,14 +146,20 @@ public sealed class SettingsStore : IDisposable
             settings.MinimumFrameDelta == 30 &&
             Math.Abs(settings.WheelMultiplier - 2.0) < 0.001;
 
-        if (!hasFirstPrototypeTiming && !hasSecondPrototypeTiming && !hasThirdPrototypeTiming)
+        var hasFourthPrototypeTiming =
+            settings.AnimationDurationMs == 48 &&
+            settings.FrameCount == 4 &&
+            settings.MinimumFrameDelta == 30 &&
+            Math.Abs(settings.WheelMultiplier - 4.0) < 0.001;
+
+        if (!hasFirstPrototypeTiming &&
+            !hasSecondPrototypeTiming &&
+            !hasThirdPrototypeTiming &&
+            !hasFourthPrototypeTiming)
         {
             return;
         }
 
-        settings.AnimationDurationMs = AppSettings.DefaultAnimationDurationMs;
-        settings.FrameCount = AppSettings.DefaultFrameCount;
-        settings.MinimumFrameDelta = AppSettings.DefaultMinimumFrameDelta;
-        settings.WheelMultiplier = AppSettings.DefaultWheelMultiplier;
+        settings.ApplySmootherPreset();
     }
 }
